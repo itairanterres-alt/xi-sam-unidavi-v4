@@ -188,12 +188,12 @@ function useFillViewport(BW) {
   React.useLayoutEffect(() => {
     const el = ref.current; if (!el) return;
     const medir = () => {
-      // viewport REAL (janela) é o alvo do fit — clientWidth/Height do wrapper
-      // pode reportar o tamanho do CONTEÚDO (cartão) no 1º layout → scale errado.
-      const vw = window.innerWidth, vh = window.innerHeight;
+      // ALVO do fit = o CONTÊINER do pôster (não a janela), para caber também
+      // quando divide a tela com a barra do editor. Cai na janela só se o
+      // contêiner ainda não tiver layout (clientW/H ~ 0 no 1º paint).
       let w = el.clientWidth, h = el.clientHeight;
-      // usa a janela como base; só cai no wrapper se a janela não estiver disponível
-      w = vw || w; h = vh || h;
+      if (!w || w < 60) w = window.innerWidth;
+      if (!h || h < 60) h = window.innerHeight;
       if (!w || !h) return;
       const BH = Math.round(Math.min(1150, Math.max(660, BW * (h / w))));
       const scale = Math.min(w / BW, h / BH);

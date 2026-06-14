@@ -117,6 +117,7 @@ function Editor({ fonte }) {
   const [layout, setLayout] = useState({ zoneOf: {}, panelSide: "right" });
   const [salvando, setSalvando] = useState(false);
   const [toast, setToast] = useState("");
+  const [aberto, setAberto] = useState(true); // painel de controles recolhível
 
   const selFigAj = (aj.figs && aj.figs[selKey]) || {};
   const figSel = figs.find((f) => String(f.ordem) === String(selKey)) || null;
@@ -171,21 +172,38 @@ function Editor({ fonte }) {
 
   return (
     <div style={{ position: "fixed", inset: 0, background: "#0A0E13", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-      {/* preview ao vivo — o renderizador mede sozinho */}
+      {/* preview ao vivo — o renderizador mede sozinho; ocupa o espaço ACIMA da barra */}
       <div style={{ flex: 1, minHeight: 0 }}>
         <EditAjCtx.Provider value={ajLive}>
           <PosterCompletoLandscape t={t} />
         </EditAjCtx.Provider>
       </div>
 
-      {/* barra de controle */}
+      {/* barra de controle — painel fixo no rodapé que NÃO sobrepõe o pôster
+         (o preview encolhe acima dele) e pode ser recolhido para ver tudo */}
       <div style={{
-        position: "fixed", left: "50%", bottom: 16, transform: "translateX(-50%)",
-        width: "min(1020px, calc(100vw - 28px))", background: "rgba(8,16,26,0.95)",
-        border: "1px solid rgba(255,255,255,0.10)", borderRadius: 16, padding: "12px 16px",
-        boxShadow: "0 14px 44px rgba(0,0,0,0.6)", backdropFilter: "blur(10px)", zIndex: 50,
-        display: "flex", flexDirection: "column", gap: 11,
+        flexShrink: 0, width: "100%", background: "rgba(8,16,26,0.97)",
+        borderTop: "1px solid rgba(255,255,255,0.12)", padding: aberto ? "9px 16px 11px" : "7px 16px",
+        display: "flex", flexDirection: "column", gap: 9, boxShadow: "0 -8px 28px rgba(0,0,0,0.45)",
       }}>
+        {/* cabeçalho sempre visível: recolher + título + ações */}
+        <div style={{ display: "flex", alignItems: "center", gap: 9, flexWrap: "wrap" }}>
+          <button onClick={() => setAberto((a) => !a)} style={{ ...ghost, padding: "5px 12px", fontSize: 12 }}>
+            {aberto ? "▾ Ocultar controles" : "▴ Mostrar controles"}
+          </button>
+          <span style={{ fontSize: 11.5, color: "rgba(255,255,255,0.45)", flex: 1, minWidth: 100, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {t.id} · {t.titulo}
+          </span>
+          {toast && <span style={{ fontSize: 12, fontWeight: 700, color: "#7FE0A8" }}>{toast}</span>}
+          <button onClick={resetTudo} style={ghost}>Resetar tudo</button>
+          <button onClick={voltar} style={ghost}>Voltar</button>
+          <button onClick={salvar} disabled={salvando} style={{
+            border: "none", background: salvando ? "#0a6f99" : "#00ADEF", color: "#fff", borderRadius: 8,
+            padding: "8px 18px", fontSize: 13, fontWeight: 800, cursor: salvando ? "default" : "pointer", fontFamily: "inherit", whiteSpace: "nowrap",
+          }}>{salvando ? "Salvando…" : "✓ Salvar ajustes"}</button>
+        </div>
+
+        {aberto && <>
         {/* linha 1: colunas · figura · mapa de slots */}
         <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -227,20 +245,7 @@ function Editor({ fonte }) {
             )}
           </div>
         )}
-
-        {/* linha 3: ações */}
-        <div style={{ display: "flex", alignItems: "center", gap: 9, flexWrap: "wrap", borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 10 }}>
-          <span style={{ fontSize: 11.5, color: "rgba(255,255,255,0.45)", flex: 1, minWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-            {t.id} · {t.titulo}
-          </span>
-          {toast && <span style={{ fontSize: 12, fontWeight: 700, color: "#7FE0A8" }}>{toast}</span>}
-          <button onClick={resetTudo} style={ghost}>Resetar tudo</button>
-          <button onClick={voltar} style={ghost}>Voltar</button>
-          <button onClick={salvar} disabled={salvando} style={{
-            border: "none", background: salvando ? "#0a6f99" : "#00ADEF", color: "#fff", borderRadius: 8,
-            padding: "8px 18px", fontSize: 13, fontWeight: 800, cursor: salvando ? "default" : "pointer", fontFamily: "inherit", whiteSpace: "nowrap",
-          }}>{salvando ? "Salvando…" : "✓ Salvar ajustes"}</button>
-        </div>
+        </>}
       </div>
     </div>
   );
